@@ -1,6 +1,22 @@
+import tempfile
 import unittest
+from pathlib import Path
 
 from rag import chunking, metrics
+
+
+class TestLoadDocuments(unittest.TestCase):
+    def test_only_language_folders_are_read(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "en").mkdir()
+            (root / "fr").mkdir()
+            (root / "SOURCES.md").write_text("| File |", encoding="utf-8")
+            (root / "en" / "flood_kb.md").write_text("Flood text.", encoding="utf-8")
+            (root / "fr" / "notes_x.txt").write_text("Texte.", encoding="utf-8")
+            docs = chunking.load_documents(root)
+        meta = sorted((d["source"], d["language"], d["topic"]) for d in docs)
+        self.assertEqual(meta, [("flood_kb.md", "en", "flood"), ("notes_x.txt", "fr", "general")])
 
 
 class TestFixedChunking(unittest.TestCase):

@@ -137,15 +137,17 @@ def read_pages(path):
 def load_documents(corpus_dir):
     """Read every supported file under corpus_dir.
 
+    Only files inside an en/ or fr/ folder are read, so notes such as
+    SOURCES.md at the corpus root are not indexed.
     Language comes from the parent folder (en or fr). Topic comes from the file
     name prefix (fire_, flood_, structural_, general_), for example
     fire_fema_p2143.pdf has topic fire.
     """
     docs = []
     for path in sorted(Path(corpus_dir).rglob("*")):
-        if path.suffix.lower() not in SUPPORTED_SUFFIXES:
+        if path.suffix.lower() not in SUPPORTED_SUFFIXES or path.parent.name not in LANGUAGES:
             continue
-        language = path.parent.name if path.parent.name in LANGUAGES else "unknown"
+        language = path.parent.name
         topic = path.stem.split("_")[0].lower()
         if topic not in TOPICS:
             topic = "general"
