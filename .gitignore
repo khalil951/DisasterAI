@@ -6,3 +6,10 @@ __pycache__/
 rag/chroma_db/
 n8n_data/
 .DS_Store
+
+# Next.js demo UI
+web/node_modules/
+web/.next/
+web/.env.local
+web/next-env.d.ts
+web/*.tsbuildinfo
