@@ -95,6 +95,17 @@ The response is JSON: `status` (ok, needs_more_information, degraded, flagged, r
 
 A Streamlit screen to send an incident to the n8n webhook and read the result: `streamlit run ui/app.py` (opens on http://localhost:8501). Pick the n8n instance in the sidebar (default `http://localhost:5678/webhook/incident`, the one `docker compose up -d` publishes), check the health lights (n8n, RAG service, model chains, local vision model, disk), choose a fixed incident or write your own, add a photo, press Run. The result shows a plain-language status, the report with the source of each statement and the passage behind each recommendation, the image next to the report, the real pipeline steps (model, seconds, fallbacks, degraded steps, first validation problems, a discarded repair) and the raw JSON. For a fixed incident it also shows the expected values (type, severity) as met or not. Every run is saved in `eval/results/ui_runs/` and can be compared in the History tab. n8n answers only when the whole run ends, so the progress bar is a timer. The console explains its own errors (unreachable, workflow not active, timeout, not JSON). To try the screen without spending model quota: `python scripts/replay_webhook.py` and pick "Replay of saved answers" (it replays saved real answers and is labelled MOCK; add `?mode=degraded`, `flagged`, `repair_discarded`, `rejected`, `error500`... in a custom URL to see the failure paths). Tests: `backend/tests/test_ui.py` and `test_ui_app.py`.
 
+### Demo UI (Next.js)
+
+`web/` is a simple, modern interface for presenting the project (the Streamlit console above stays the internal test tool; both use the same n8n webhook and save runs in the same `eval/results/ui_runs/` format, so each can reopen the other's runs). One flow: describe an incident, add a photo or pick an example, get the severity, the report and the sources, with pipeline, checks and raw JSON under "Technical details". English interface, report in English or French, light and dark theme, a history drawer, copy / Markdown / print. A "Demo data" switch sends to the replay webhook so a demo cannot fail live; its answers are labelled "Demo data" and saved as MOCK.
+
+```bash
+cd web && npm install && npm run dev          # http://localhost:3000 (copy .env.example to .env.local to change targets)
+python scripts/replay_webhook.py --port 5690   # only for the Demo data switch and the error-state walk-through
+```
+
+The Next.js server proxies to n8n, so the browser never sees or chooses the target. Details: `web/README.md` and `docs/DEMO_UI.md`. Tests: `cd web && npm test` (57 on 2026-10-19).
+
 ## Tests
 
 - Unit tests (no network, no model): `python -m unittest discover -s rag/tests -t .` and `python -m unittest discover -s backend/tests -t .` (32 and 209 tests on 2026-10-18). The tests of the workflow's JavaScript nodes need Node (`node` on the path) and are skipped without it.
